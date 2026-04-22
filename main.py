@@ -80,11 +80,13 @@ class GroceryApp:
             self.console.print("[dim]1.[/dim] Add Product")
             self.console.print("[dim]2.[/dim] View Products")
             self.console.print("[dim]3.[/dim] Delete Product")
-            self.console.print("[dim]4.[/dim] Back")
+            self.console.print("[dim]4.[/dim] Add Category")
+            self.console.print("[dim]5.[/dim] View Categories")
+            self.console.print("[dim]6.[/dim] Back")
             self.console.print()
 
             choice = Prompt.ask(
-                choices=["1", "2", "3", "4"],
+                choices=["1", "2", "3", "4", "5", "6"],
             )
 
             if choice == "1":
@@ -94,6 +96,10 @@ class GroceryApp:
             elif choice == "3":
                 self.delete_product()
             elif choice == "4":
+                self.add_category()
+            elif choice == "5":
+                self.view_categories()
+            elif choice == "6":
                 break
     def no_menu(self):
         self._clear_screen()
@@ -278,6 +284,88 @@ class GroceryApp:
             self.console.print(f"[red]Database error:[/red] {e}")
         finally:
             conn.close()
+
+        self._pause()
+
+    def add_category(self):
+        self._clear_screen()
+        self.console.rule("[bold magenta]Add Category[/bold magenta]", style="magenta")
+
+        self.console.print()
+        category_name = Prompt.ask("Category name").strip()
+
+        if not category_name:
+            self.console.print("[red]Category name cannot be empty.[/red]")
+            self._pause()
+            return
+
+        if len(category_name) > 50:
+            self.console.print("[red]Category name must be 50 characters or fewer.[/red]")
+            self._pause()
+            return
+
+        conn, cursor = self.get_connection()
+        try:
+            cursor.execute(
+                """
+                SELECT 1
+                FROM categories
+                WHERE LOWER(category_name) = LOWER(?)
+                LIMIT 1
+                """,
+                (category_name,),
+            )
+            if cursor.fetchone() is not None:
+                self.console.print("[yellow]That category already exists.[/yellow]")
+                self._pause()
+                return
+
+            cursor.execute(
+                """
+                INSERT INTO categories (category_name)
+                VALUES (?)
+                """,
+                (category_name,),
+            )
+            conn.commit()
+            self.console.print("[bold green]Category added successfully.[/bold green]")
+        except sqlite3.Error as e:
+            self.console.print(f"[red]Database error:[/red] {e}")
+        finally:
+            conn.close()
+
+        self._pause()
+
+    def view_categories(self):
+        self._clear_screen()
+        self.console.rule("[bold magenta]All Categories[/bold magenta]", style="magenta")
+
+        self.console.print()
+
+        conn, cursor = self.get_connection()
+        try:
+            cursor.execute(
+                """
+                SELECT category_id, category_name
+                FROM categories
+                ORDER BY category_name
+                """
+            )
+            rows = cursor.fetchall()
+        finally:
+            conn.close()
+
+        if not rows:
+            self.console.print("[red]No categories found.[/red]")
+        else:
+            table = Table(title="Categories", show_lines=True)
+            table.add_column("ID", justify="right")
+            table.add_column("Category Name")
+
+            for row in rows:
+                table.add_row(str(row[0]), row[1])
+
+            self.console.print(table)
 
         self._pause()
 

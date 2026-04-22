@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model categories {
+  category_id   Int        @id @default(autoincrement())
+  category_name String     @unique(map: "sqlite_autoindex_categories_1")
+  products      products[]
+}
+
+model customers {
+  customer_id Int      @id @default(autoincrement())
+  first_name  String
+  last_name   String
+  phone       String?
+  orders      orders[]
+}
+
+model order_items {
+  order_item_id Int      @id @default(autoincrement())
+  order_id      Int
+  product_id    Int
+  quantity      Int
+  item_price    Float
+  products      products @relation(fields: [product_id], references: [product_id], onDelete: NoAction, onUpdate: NoAction)
+  orders        orders   @relation(fields: [order_id], references: [order_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model orders {
+  order_id     Int           @id @default(autoincrement())
+  customer_id  Int
+  order_date   String
+  total_amount Float?
+  order_items  order_items[]
+  customers    customers     @relation(fields: [customer_id], references: [customer_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model products {
+  product_id     Int           @id @default(autoincrement())
+  sku            String        @unique(map: "sqlite_autoindex_products_1")
+  product_name   String
+  price          Float
+  stock_quantity Int
+  category_id    Int?
+  supplier_id    Int?
+  order_items    order_items[]
+  suppliers      suppliers?    @relation(fields: [supplier_id], references: [supplier_id], onDelete: NoAction, onUpdate: NoAction)
+  categories     categories?   @relation(fields: [category_id], references: [category_id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model suppliers {
+  supplier_id   Int        @id @default(autoincrement())
+  supplier_name String
+  phone         String?
+  products      products[]
+}
