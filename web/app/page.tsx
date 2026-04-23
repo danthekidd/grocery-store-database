@@ -2,6 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { ShopDemo } from "@/app/components/shop-demo";
 
 export default async function Home() {
+  const categories = await prisma.categories.findMany({
+    orderBy: { category_name: "asc" },
+  });
+
   const products = await prisma.products.findMany({
     orderBy: { product_name: "asc" },
     take: 24,
@@ -21,5 +25,10 @@ export default async function Home() {
     stock: product.stock_quantity,
   }));
 
-  return <ShopDemo products={shopProducts} />;
+  const categoryOptions = categories.map((category) => ({
+    id: category.category_id,
+    name: category.category_name,
+  }));
+
+  return <ShopDemo products={shopProducts} categories={categoryOptions} />;
 }

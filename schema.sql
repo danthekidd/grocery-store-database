@@ -29,7 +29,9 @@ CREATE TABLE IF NOT EXISTS customers (
     customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
     first_name TEXT NOT NULL CHECK (length(first_name) <= 50),
     last_name TEXT NOT NULL CHECK (length(first_name) <= 50),
-    phone TEXT CHECK (length(phone) <= 15)
+    phone TEXT CHECK (length(phone) <= 15),
+    password_hash TEXT,
+    is_admin INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS orders (

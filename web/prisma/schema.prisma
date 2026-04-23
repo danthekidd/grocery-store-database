@@ -14,11 +14,13 @@ model categories {
 }
 
 model customers {
-  customer_id Int      @id @default(autoincrement())
-  first_name  String
-  last_name   String
-  phone       String?
-  orders      orders[]
+  customer_id    Int      @id @default(autoincrement())
+  first_name     String
+  last_name      String
+  phone          String?
+  password_hash  String?
+  is_admin       Boolean  @default(false)
+  orders         orders[]
 }
 
 model order_items {
